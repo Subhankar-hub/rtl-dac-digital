@@ -1,0 +1,8 @@
+# RTh checks and simple synthesis to generic cells (for linting/stat)
+
+read_verilog rtl/*.v
+hirerarchy -check
+proc
+opt
+flatten
+stat

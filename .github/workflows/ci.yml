@@ -1,0 +1,36 @@
+name: RTL CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  simulate-and-synth:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Icarus Verilog and Yosys
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y iverilog yosys
+
+      - name: Run PWM DAC simulation
+        run: make sim_pwm
+
+      - name: Run Sigma-Delta DAC simulation
+        run: make sim_sd
+
+      - name: Run Yosys synthesis check
+        run: make synth_check
+
+      - name: Upload simulation results
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulation-results
+          path: build/*.csv
+          if-no-files-found: warn

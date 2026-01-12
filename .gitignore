@@ -3,3 +3,6 @@
 *.vcd
 .vscode/
 *.json
+/build/
+*.vvp
+*.vcd
