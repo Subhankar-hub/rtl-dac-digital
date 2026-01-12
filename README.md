@@ -32,6 +32,70 @@ Suggested experiments and metrics to learn and measure:
 ## Analysis scripts (optional)
 - Use Python to load CSV results (`pandas`) and compute ENOB, SNR, error histograms, and plots.
 
+## RTL-to-GDS Flow (ASIC Tapeout)
+
+This project supports full RTL-to-GDS using **OpenLane** with the **SkyWater 130nm PDK** (open-source).
+
+### Prerequisites
+- Docker installed: `sudo apt-get install docker.io`
+- Add yourself to docker group: `sudo usermod -aG docker $USER` (logout/login after)
+
+### Run RTL-to-GDS
+
+```bash
+# Using OpenLane2 (recommended, newer)
+make gds
+
+# Or using OpenLane 1.x (classic)
+make gds1
+```
+
+### What happens during the flow
+
+| Stage | Tool | Description |
+|-------|------|-------------|
+| **Synthesis** | Yosys | RTL → Gate-level netlist |
+| **Floorplan** | OpenROAD | Define die area, place IOs, power grid |
+| **Placement** | OpenROAD | Place standard cells |
+| **CTS** | OpenROAD | Clock Tree Synthesis |
+| **Routing** | OpenROAD | Connect all cells with metal wires |
+| **Signoff** | Magic/Netgen | DRC, LVS, antenna checks |
+| **GDS Export** | Magic | Final GDSII layout file |
+
+### Output Files
+After running, find outputs in `runs/<timestamp>/`:
+```
+runs/<run>/
+├── final/
+│   ├── gds/dac_top.gds      # Final layout (send to foundry)
+│   ├── lef/dac_top.lef      # Abstract view for integration
+│   └── nl/dac_top.v         # Gate-level netlist
+├── reports/                  # Timing, area, power reports
+└── logs/                     # Step-by-step logs
+```
+
+### View GDS Layout
+```bash
+# Using KLayout (install: sudo apt-get install klayout)
+klayout runs/<run>/final/gds/dac_top.gds
+
+# Or using Magic
+magic -T sky130A runs/<run>/final/gds/dac_top.gds
+```
+
+### Configuration
+Edit `openlane/config.json` to tune:
+- `CLOCK_PERIOD`: Target clock period in ns (20.0 = 50MHz)
+- `DIE_AREA`: Die dimensions in μm (`"0 0 100 100"` = 100×100μm)
+- `FP_CORE_UTIL`: Core utilization % (lower = easier routing)
+- `PL_TARGET_DENSITY`: Placement density
+
+### Alternative: Tiny Tapeout
+For actual fabrication, consider [Tiny Tapeout](https://tinytapeout.com/) which provides:
+- Low-cost shuttle runs (~$150 for a small tile)
+- Uses the same OpenLane flow
+- Provides a template with IO ring already done
+
 ## Next steps
 - Add a register interface (APB/APB-lite or simple memory-mapped registers) to control DAC value from a CPU model.
 - Add a testbench with randomized stimulus, or connect to a UVM environment for verification practice.

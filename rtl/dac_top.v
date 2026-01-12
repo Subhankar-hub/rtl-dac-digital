@@ -1,7 +1,7 @@
 // Top wrapper that instantiates PWM or Sigma-Delta DAC and optional clock divider
 module dac_top #(
     parameter WIDTH = 6,
-    parameter USE_SIGMA_DELTA = 0, // if 1 use sigma-delta, else use PWM
+    parameter USE_SIGMA_DELTA = 0  // if 1 use sigma-delta, else use PWM
 )(
     input wire clk,
     input wire rstn,

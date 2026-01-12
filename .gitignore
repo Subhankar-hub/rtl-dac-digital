@@ -1,8 +1,14 @@
+# Build artifacts
 /build/
 *.vvp
 *.vcd
+
+# IDE
 .vscode/
-*.json
-/build/
-*.vvp
-*.vcd
+
+# OpenLane outputs (large, regeneratable)
+/runs/
+/gds_output/
+
+# Keep openlane config but ignore run results
+!openlane/config.json
