@@ -45,7 +45,10 @@ jobs:
   rtl-to-gds:
     runs-on: ubuntu-latest
     needs: simulate-and-synth
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.run_gds == 'true'
+    # Run on: push to main, OR manual dispatch with run_gds=true
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.run_gds == true)
 
     steps:
       - name: Checkout repository
