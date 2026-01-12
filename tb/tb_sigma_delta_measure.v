@@ -1,4 +1,4 @@
-`timescale 1ps/
+`timescale 1ns/1ps
 
 // Measure mean value of sigma-delta output stream for each input
 
