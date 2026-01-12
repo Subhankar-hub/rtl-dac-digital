@@ -1,5 +1,6 @@
 `timescale 1ns/1ps
-// Testbench that measures PWM duty cycle for each input value and writes CSV
+// tb/tb_pwm_measure.v
+// Testbench that measures PWM duty cycle for each input value and writes CSV + VCD
 module tb_pwm_measure;
     parameter WIDTH = 6;
     reg clk = 0;
@@ -21,9 +22,13 @@ module tb_pwm_measure;
     always #5 clk = ~clk; // 100 MHz (10 ns period)
 
     initial begin
-        cycles = 1024 * (1<<WIDTH); // ensure many PWM periods
+        cycles = 256 * (1<<WIDTH); // reduced for waveform size but still many PWM periods
         csv = $fopen("build/pwm_measurements.csv","w");
         $fwrite(csv, "value,measured_fraction\n");
+
+        // VCD for GTKWave
+        $dumpfile("build/wave_pwm.vcd");
+        $dumpvars(0, tb_pwm_measure);
 
         // reset
         rstn = 0; #20; rstn = 1;

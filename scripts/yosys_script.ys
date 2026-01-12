@@ -1,7 +1,7 @@
-# RTh checks and simple synthesis to generic cells (for linting/stat)
-
+# scripts/yosys_script.ys
+# RTL checks and simple synth to generic cells (for linting/stat)
 read_verilog rtl/*.v
-hirerarchy -check
+hierarchy -check
 proc
 opt
 flatten

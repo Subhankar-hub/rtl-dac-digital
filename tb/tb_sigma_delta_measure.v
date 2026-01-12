@@ -1,5 +1,6 @@
 `timescale 1ns/1ps
-// Measure mean value of sigma-delta output stream for each input
+// tb/tb_sigma_delta_measure.v
+// Measure mean value of sigma-delta output stream for each input + VCD
 module tb_sigma_delta_measure;
     parameter WIDTH = 8;
     reg clk = 0;
@@ -20,9 +21,14 @@ module tb_sigma_delta_measure;
     always #1 clk = ~clk; // high-rate clock for oversampling
 
     initial begin
-        samples = 100000; // many samples to estimate mean
+        samples = 20000; // reduced to keep VCD size reasonable
         csv = $fopen("build/sd_measurements.csv","w");
         $fwrite(csv, "value,measured_fraction\n");
+
+        // VCD for GTKWave
+        $dumpfile("build/wave_sd.vcd");
+        $dumpvars(0, tb_sigma_delta_measure);
+
         rstn = 0; #10; rstn = 1;
 
         for (v = 0; v < (1<<WIDTH); v = v + 16) begin
