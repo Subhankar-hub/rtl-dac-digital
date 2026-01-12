@@ -1,40 +1,40 @@
+`timescale 1ns/1ps
+// rtl/sigma_delta_dac.v
 // First-order sigma-delta modulator (single-bit output) that accepts N-bit input
-// add outputs a 1-bit stream at oversampled rate, simple integrator + comparator.
+// and outputs a 1-bit stream at oversampled rate. Simple integrator + comparator.
+// Written to be compatible with Icarus Verilog (Verilog-2001 style).
 
 module sigma_delta_dac #(
     parameter WIDTH = 8
-
 )(
-    input wire clk,
-    input wire rstn,
-    input [WIDTH-1:0] value, // target amplitude
+    input  wire clk,
+    input  wire rstn,
+    input  wire [WIDTH-1:0] value, // target amplitude
     output reg sd_out
 );
-    // accumulator width: WIDTH  + 1 to avoid overflow
-    reg signed [WIDTH:0] integrator;
-    wire signed [WIDTH:0] ref;
 
-    // reference: left-justified input in same signed domain 
-    assign ref = {value, 1'b0}; // *2
+    // Use integer accumulator to avoid signed reg width issues across simulators.
+    // integer is signed by default and has at least 32 bits.
+    integer integrator;
+    // a small vector that represents value shifted left once (value * 2)
+    wire [WIDTH:0] ref;
+    assign ref = {value, 1'b0}; // WIDTH+1 bits
 
     always @(posedge clk or negedge rstn) begin
-      if (!rstn) begin
-        integrator <= 0;
-        sd_out <= 1'b0;
-      end else begin
-        // subtract previous output (as signed and add reference)
-        // convert sd_out(0/1) to signed value (-1 or +1) scaled: here use 0/1 mapping
-        if (sd_out)
-        integrator <= integrator + ref -{{1{1'b0}}, 1'b1};
-        else
-        integrator <= integrator - ref +{{1{1'b0}}, 1'b1};
+        if (!rstn) begin
+            integrator <= 0;
+            sd_out <= 1'b0;
+        end else begin
+            // integrator <- integrator + ref - sd_out
+            // ref and sd_out are unsigned; integrator is signed (integer)
+            integrator <= integrator + $signed(ref) - $signed(sd_out);
 
-        // comparator
-        if ( integrator >= 0)
-        sd_out <= 1'b1;
-        else
-        sd_out <= 1'b0;
-      end
+            // comparator: output 1 when integrator non-negative
+            if (integrator >= 0)
+                sd_out <= 1'b1;
+            else
+                sd_out <= 1'b0;
+        end
     end
 
 endmodule
