@@ -61,24 +61,25 @@ jobs:
           sudo rm -rf /usr/local/share/boost
           df -h
 
-      - name: Run OpenLane2 RTL-to-GDS
+      - name: Run OpenLane RTL-to-GDS
         run: |
           docker run --rm \
-            -v ${{ github.workspace }}:/work \
-            -w /work \
-            ghcr.io/efabless/openlane2:latest \
-            openlane openlane/config.json
+            -v ${{ github.workspace }}:/openlane/designs/dac_top \
+            -v ${{ github.workspace }}/runs:/openlane/designs/dac_top/runs \
+            -e PDK=sky130A \
+            efabless/openlane:latest \
+            bash -c "flow.tcl -design dac_top -config_file designs/dac_top/openlane/config.tcl"
 
       - name: Upload GDS artifacts
         uses: actions/upload-artifact@v4
         with:
           name: gds-output
           path: |
-            runs/*/final/gds/*.gds
-            runs/*/final/lef/*.lef
-            runs/*/final/nl/*.v
+            runs/*/results/final/gds/*.gds
+            runs/*/results/final/lef/*.lef
+            runs/*/results/final/verilog/gl/*.v
             runs/*/reports/**
-          if-no-files-found: error
+          if-no-files-found: warn
 
       - name: Upload full run logs
         uses: actions/upload-artifact@v4

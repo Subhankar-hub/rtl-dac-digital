@@ -1,5 +1,5 @@
 #!/bin/bash
-# RTL-to-GDS flow using OpenLane2 Docker
+# RTL-to-GDS flow using OpenLane Docker
 # Usage: ./scripts/run_openlane.sh
 
 set -e
@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
 echo "=========================================="
-echo "RTL-to-GDS Flow using OpenLane2 + Docker"
+echo "RTL-to-GDS Flow using OpenLane + Docker"
 echo "=========================================="
 echo "Project: $PROJECT_DIR"
 echo ""
@@ -21,22 +21,22 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # Create output directory
-mkdir -p "$PROJECT_DIR/gds_output"
+mkdir -p "$PROJECT_DIR/runs"
 
-# Option 1: OpenLane2 (newer, recommended)
-echo "Running OpenLane2 flow..."
+echo "Running OpenLane flow..."
 docker run --rm \
-    -v "$PROJECT_DIR:/work" \
-    -w /work \
-    ghcr.io/efabless/openlane2:latest \
-    openlane openlane/config.json
+    -v "$PROJECT_DIR:/openlane/designs/dac_top" \
+    -v "$PROJECT_DIR/runs:/openlane/designs/dac_top/runs" \
+    -e PDK=sky130A \
+    efabless/openlane:latest \
+    bash -c "flow.tcl -design dac_top -config_file designs/dac_top/openlane/config.tcl"
 
 echo ""
 echo "=========================================="
 echo "GDS flow complete!"
-echo "Output files in: runs/<run_name>/final/"
-echo "  - GDS:     final/gds/*.gds"
-echo "  - LEF:     final/lef/*.lef"
-echo "  - Netlist: final/nl/*.v"
+echo "Output files in: runs/<run_name>/results/final/"
+echo "  - GDS:     results/final/gds/*.gds"
+echo "  - LEF:     results/final/lef/*.lef"
+echo "  - Netlist: results/final/verilog/gl/*.v"
 echo "  - Reports: reports/"
 echo "=========================================="
