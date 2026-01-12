@@ -28,7 +28,7 @@ echo "Running OpenLane2 flow..."
 docker run --rm \
     -v "$PROJECT_DIR:/work" \
     -w /work \
-    efabless/openlane2:latest \
+    ghcr.io/efabless/openlane2:latest \
     openlane openlane/config.json
 
 echo ""
