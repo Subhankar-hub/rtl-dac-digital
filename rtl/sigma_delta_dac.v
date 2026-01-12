@@ -1,8 +1,7 @@
 `timescale 1ns/1ps
 // rtl/sigma_delta_dac.v
 // First-order sigma-delta modulator (single-bit output) that accepts N-bit input
-// and outputs a 1-bit stream at oversampled rate. Simple integrator + comparator.
-// Written to be compatible with Icarus Verilog (Verilog-2001 style).
+// and outputs a 1-bit stream at oversampled rate. Compatible with Icarus Verilog.
 
 module sigma_delta_dac #(
     parameter WIDTH = 8
@@ -13,27 +12,33 @@ module sigma_delta_dac #(
     output reg sd_out
 );
 
-    // Use integer accumulator to avoid signed reg width issues across simulators.
-    // integer is signed by default and has at least 32 bits.
+    // Use integer accumulator for signed arithmetic.
     integer integrator;
-    // a small vector that represents value shifted left once (value * 2)
-    wire [WIDTH:0] ref;
-    assign ref = {value, 1'b0}; // WIDTH+1 bits
+
+    // Full-scale feedback value: 2^WIDTH
+    localparam integer FULL_SCALE = 1 << WIDTH;
+
+    initial begin
+        integrator = 0;
+    end
 
     always @(posedge clk or negedge rstn) begin
         if (!rstn) begin
             integrator <= 0;
             sd_out <= 1'b0;
         end else begin
-            // integrator <- integrator + ref - sd_out
-            // ref and sd_out are unsigned; integrator is signed (integer)
-            integrator <= integrator + $signed(ref) - $signed(sd_out);
+            // First-order sigma-delta: integrator += input - feedback
+            // Feedback is FULL_SCALE when sd_out=1, 0 when sd_out=0
+            integer feedback;
+            integer next_integrator;
 
-            // comparator: output 1 when integrator non-negative
-            if (integrator >= 0)
-                sd_out <= 1'b1;
-            else
-                sd_out <= 1'b0;
+            feedback = sd_out ? FULL_SCALE : 0;
+            next_integrator = integrator + value - feedback;
+
+            integrator <= next_integrator;
+
+            // Comparator: output 1 when next integrator value is non-negative
+            sd_out <= (next_integrator >= 0) ? 1'b1 : 1'b0;
         end
     end
 

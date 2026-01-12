@@ -1,6 +1,6 @@
 # scripts/yosys_script.ys
 # RTL checks and simple synth to generic cells (for linting/stat)
-read_verilog rtl/*.v
+read_verilog -sv rtl/*.v
 hierarchy -check
 proc
 opt
