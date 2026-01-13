@@ -1,4 +1,6 @@
 # OpenLane Configuration for dac_top (OpenLane 1.x compatible)
+# DEPRECATED: Use config.json with OpenLane 2 instead
+# This file is kept for reference only
 
 set ::env(DESIGN_NAME) "dac_top"
 

@@ -12,7 +12,7 @@ synth_check:
 	chmod +x scripts/synth_check.sh
 	./scripts/synth_check.sh
 
-# RTL-to-GDS using OpenLane (Docker)
+# RTL-to-GDS using OpenLane 2 (requires: pip install openlane volare)
 gds:
 	chmod +x scripts/run_openlane.sh
 	./scripts/run_openlane.sh

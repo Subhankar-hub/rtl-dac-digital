@@ -34,20 +34,24 @@ Suggested experiments and metrics to learn and measure:
 
 ## RTL-to-GDS Flow (ASIC Tapeout)
 
-This project supports full RTL-to-GDS using **OpenLane** with the **SkyWater 130nm PDK** (open-source).
+This project supports full RTL-to-GDS using **OpenLane 2** with the **SkyWater 130nm PDK** (open-source).
 
 ### Prerequisites
-- Docker installed: `sudo apt-get install docker.io`
-- Add yourself to docker group: `sudo usermod -aG docker $USER` (logout/login after)
+- Python 3.8+
+- Install OpenLane and PDK:
+
+```bash
+# Install OpenLane 2 and Volare (PDK manager)
+pip install openlane volare
+
+# Install the sky130 PDK
+volare enable --pdk sky130 78b7bc32ddb4b6f14f76883c2e2dc5b5de9d1cbc
+```
 
 ### Run RTL-to-GDS
 
 ```bash
-# Using OpenLane2 (recommended, newer)
 make gds
-
-# Or using OpenLane 1.x (classic)
-make gds1
 ```
 
 ### What happens during the flow

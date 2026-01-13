@@ -1,6 +1,11 @@
 {
     "DESIGN_NAME": "dac_top",
-    "VERILOG_FILES": "dir::../rtl/*.v",
+    "VERILOG_FILES": [
+        "dir::../rtl/clock_divider.v",
+        "dir::../rtl/pwm_dac.v",
+        "dir::../rtl/sigma_delta_dac.v",
+        "dir::../rtl/dac_top.v"
+    ],
     "CLOCK_PORT": "clk",
     "CLOCK_PERIOD": 20.0,
     "FP_CORE_UTIL": 40,
@@ -10,6 +15,5 @@
     "DESIGN_IS_CORE": false,
     "GPL_CELL_PADDING": 2,
     "DPL_CELL_PADDING": 2,
-    "ROUTING_CORES": 4,
-    "RUN_CVC": false
+    "ROUTING_CORES": 4
 }

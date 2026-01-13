@@ -1,6 +1,10 @@
 #!/bin/bash
-# RTL-to-GDS flow using OpenLane Docker
+# RTL-to-GDS flow using OpenLane 2 (from The-OpenROAD-Project/OpenLane)
 # Usage: ./scripts/run_openlane.sh
+#
+# Prerequisites:
+#   pip install openlane volare
+#   volare enable --pdk sky130 78b7bc32ddb4b6f14f76883c2e2dc5b5de9d1cbc
 
 set -e
 
@@ -8,35 +12,45 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
 echo "=========================================="
-echo "RTL-to-GDS Flow using OpenLane + Docker"
+echo "RTL-to-GDS Flow using OpenLane 2"
 echo "=========================================="
 echo "Project: $PROJECT_DIR"
 echo ""
 
-# Check if Docker is available
-if ! command -v docker &> /dev/null; then
-    echo "ERROR: Docker is not installed or not in PATH"
-    echo "Install with: sudo apt-get install docker.io"
+# Check if openlane is installed
+if ! command -v openlane &> /dev/null; then
+    echo "ERROR: OpenLane 2 is not installed"
+    echo ""
+    echo "Install with:"
+    echo "  pip install openlane volare"
+    echo "  volare enable --pdk sky130 78b7bc32ddb4b6f14f76883c2e2dc5b5de9d1cbc"
     exit 1
+fi
+
+# Check if PDK is available
+if [ ! -d "$HOME/.volare/sky130A" ] && [ -z "$PDK_ROOT" ]; then
+    echo "WARNING: sky130A PDK not found in ~/.volare/sky130A"
+    echo ""
+    echo "Install PDK with:"
+    echo "  volare enable --pdk sky130 78b7bc32ddb4b6f14f76883c2e2dc5b5de9d1cbc"
+    echo ""
+    echo "Attempting to continue anyway..."
 fi
 
 # Create output directory
 mkdir -p "$PROJECT_DIR/runs"
 
+cd "$PROJECT_DIR"
+
 echo "Running OpenLane flow..."
-docker run --rm \
-    -v "$PROJECT_DIR:/openlane/designs/dac_top" \
-    -v "$PROJECT_DIR/runs:/openlane/designs/dac_top/runs" \
-    -e PDK=sky130A \
-    efabless/openlane:latest \
-    bash -c "flow.tcl -design dac_top -config_file designs/dac_top/openlane/config.tcl"
+openlane openlane/config.json --pdk sky130A
 
 echo ""
 echo "=========================================="
 echo "GDS flow complete!"
-echo "Output files in: runs/<run_name>/results/final/"
-echo "  - GDS:     results/final/gds/*.gds"
-echo "  - LEF:     results/final/lef/*.lef"
-echo "  - Netlist: results/final/verilog/gl/*.v"
-echo "  - Reports: reports/"
+echo "Output files in: runs/<run_name>/final/"
+echo "  - GDS:     final/gds/*.gds"
+echo "  - LEF:     final/lef/*.lef"
+echo "  - Netlist: final/nl/*.v"
+echo "  - Reports: *.rpt"
 echo "=========================================="
