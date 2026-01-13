@@ -59,26 +59,58 @@ jobs:
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
           sudo rm -rf /usr/local/share/boost
+          sudo rm -rf /opt/hostedtoolcache
           df -h
 
-      - name: Run OpenLane RTL-to-GDS
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install OpenLane and dependencies
         run: |
-          docker run --rm \
-            -v ${{ github.workspace }}:/openlane/designs/dac_top \
-            -v ${{ github.workspace }}/runs:/openlane/designs/dac_top/runs \
-            -e PDK=sky130A \
-            efabless/openlane:latest \
-            bash -c "flow.tcl -design dac_top -config_file designs/dac_top/openlane/config.tcl"
+          python -m pip install --upgrade pip
+          pip install openlane volare
+
+      - name: Install sky130 PDK via Volare
+        run: |
+          volare enable --pdk sky130 78b7bc32ddb4b6f14f76883c2e2dc5b5de9d1cbc
+
+      - name: Run OpenLane RTL-to-GDS flow
+        run: |
+          mkdir -p runs
+          openlane openlane/config.json --pdk sky130A
+
+      - name: List output files
+        if: always()
+        run: |
+          echo "=== OpenLane output structure ==="
+          find runs -type f -name "*.gds" -o -name "*.lef" -o -name "*.v" -o -name "*.rpt" -o -name "*.log" 2>/dev/null | head -50 || true
+          echo "=== Full tree ==="
+          ls -laR runs/ 2>/dev/null | head -100 || true
 
       - name: Upload GDS artifacts
         uses: actions/upload-artifact@v4
         with:
           name: gds-output
           path: |
-            runs/*/results/final/gds/*.gds
-            runs/*/results/final/lef/*.lef
-            runs/*/results/final/verilog/gl/*.v
-            runs/*/reports/**
+            runs/*/final/gds/
+            runs/*/final/lef/
+            runs/*/final/nl/
+            runs/*/final/pnl/
+            runs/*/final/sdc/
+            runs/*/final/sdf/
+            runs/*/final/spef/
+          if-no-files-found: warn
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: openlane-reports
+          path: |
+            runs/*/**/*.rpt
+            runs/*/**/*summary*
+            runs/*/METRICS.json
           if-no-files-found: warn
 
       - name: Upload full run logs
@@ -86,5 +118,7 @@ jobs:
         if: always()
         with:
           name: openlane-logs
-          path: runs/*/logs/**
+          path: |
+            runs/*/*.log
+            runs/*/openlane.log
           if-no-files-found: warn
